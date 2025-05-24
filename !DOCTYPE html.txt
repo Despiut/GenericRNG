@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Generic RNG</title>
+
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+  body {
+
+    background: linear-gradient(135deg, #1f1c2c, #928dab);
+
+    color: #eee;
+
+    font-family: 'Poppins', sans-serif;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    min-height: 100vh;
+
+    margin: 0;
+
+    padding: 20px;
+
+    position: relative;
+
+  }
+
+  .top-section {
+
+    text-align: center;
+
+    width: 100%;
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+  }
+
+  .credits-display {
+
+    position: absolute;
+
+    top: 10px;
+
+    left: 20px;
+
+    font-size: 1.3rem;
+
+    font-weight: 700;
+
+    padding: 10px 18px;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    border-radius: 15px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+  }
+
+  .credits-value {
+
+    color: #ffdd57;
+
+    text-shadow: 0 0 8px rgba(255, 221, 87, 0.8);
+
+    font-size: 1.6rem;
+
+  }
+
+  .bottom-section {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    width: 100%;
+
+    margin-bottom: 30px;
+
+  }
+
+  h1 {
+
+    font-size: 3rem;
+
+    margin-bottom: 10px;
+
+    text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+
+  }
+
+  .standard-button {
+
+    background: #6a5acd;
+
+    border: none;
+
+    padding: 15px 40px;
+
+    font-size: 1.4rem;
+
+    color: #fff;
+
+    border-radius: 30px;
+
+    box-shadow: 0 5px 15px rgba(106, 90, 205, 0.7);
+
+    cursor: pointer;
+
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    user-select: none;
+
+  }
+
+  .standard-button:hover {
+
+    background: #836fff;
+
+    transform: scale(1.05);
+
+  }
+
+  #shopBtn {
+
+    margin: 10px 0 20px 0;
+
+    padding: 12px 40px;
+
+    font-size: 1.4rem;
+
+    width: 200px;
+
+    background: #6a5acd;
+
+    color: #fff;
+
+    border-radius: 40px;
+
+    box-shadow: 0 8px 20px rgba(106, 90, 205, 0.8);
+
+    position: relative;
+
+    z-index: 5;
+
+  }
+
+ 
+
+  #shopBtn:hover {
+
+    background: #836fff;
+
+    transform: scale(1.05);
+
+  }
+
+  #rollBtn {
+
+    width: 100%;
+
+    max-width: 400px;
+
+    position: relative;
+
+    bottom: 0;
+
+    padding: 20px 60px;
+
+    font-size: 1.8rem;
+
+    border-radius: 40px;
+
+    box-shadow: 0 8px 20px rgba(106, 90, 205, 0.8);
+
+    margin-bottom: 15px;
+
+    margin-top: 20px;
+
+  }
+
+  /* Settings button */
+
+  #settingsBtn {
+
+    position: absolute;
+
+    bottom: 5px;
+
+    right: 5px;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    border: none;
+
+    width: 40px;
+
+    height: 40px;
+
+    border-radius: 50%;
+
+    display: none; /* Initially hidden, will appear after purchase */
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    z-index: 10;
+
+  }
+
+  #settingsBtn:hover {
+
+    background: rgba(0, 0, 0, 0.7);
+
+    transform: scale(1.1);
+
+  }
+
+  #settingsBtn svg {
+
+    width: 25px;
+
+    height: 25px;
+
+    fill: #fff;
+
+  }
+
+  #keyHint {
+
+    font-size: 0.9rem;
+
+    color: #d8d8d8;
+
+    margin-top: 2px;
+
+    text-align: center;
+
+  }
+
+  #stats-display {
+
+    font-size: 1.2rem;
+
+    color: #d8d8d8;
+
+    margin-top: 5px;
+
+    padding: 8px 15px;
+
+    border-radius: 20px;
+
+    background: rgba(0, 0, 0, 0.2);
+
+    text-align: center;
+
+    min-width: 320px;
+
+    margin-bottom: 10px;
+
+  }
+
+  .stat-value {
+
+    color: #ffdd57;
+
+    text-shadow: 0 0 5px rgba(255, 221, 87, 0.5);
+
+  }
+
+  #result {
+
+    font-size: 2.4rem;
+
+    font-weight: 700;
+
+    padding: 25px 50px;
+
+    border-radius: 40px;
+
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+
+    min-width: 340px;
+
+    text-align: center;
+
+    user-select: none;
+
+    min-height: 110px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    line-height: 1.3;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    margin-bottom: 20px;
+
+    position: relative;
+
+  }
+
+  #sellButton {
+
+    position: absolute;
+
+    top: -25px;
+
+    right: 20px;
+
+    background: #ff5555;
+
+    border: none;
+
+    padding: 8px 25px;
+
+    font-size: 1.2rem;
+
+    color: #fff;
+
+    border-radius: 20px;
+
+    box-shadow: 0 3px 10px rgba(255, 85, 85, 0.7);
+
+    cursor: pointer;
+
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    z-index: 10;
+
+  }
+
+  #sellButton:hover {
+
+    background: #ff7777;
+
+    transform: scale(1.05);
+
+  }
+
+  #subtext {
+
+    font-size: 1.2rem;
+
+    margin-top: 8px;
+
+    font-weight: 500;
+
+    color: #ccc;
+
+    text-shadow: none;
+
+  }
+
+  #highestBox {
+
+    margin-top: 0;
+
+    margin-bottom: 20px;
+
+    padding: 25px 50px;
+
+    border-radius: 40px;
+
+    font-weight: 700;
+
+    font-size: 1.5rem;
+
+    color: #fff;
+
+    min-width: 340px;
+
+    text-align: center;
+
+    user-select: none;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+
+  }
+
+  #highestRarity {
+
+    font-weight: 700;
+
+  }
+
+  /* Auto Sell Status */
+
+  #autoSellStatus {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 1.2rem;
+
+    margin-bottom: 15px;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    padding: 10px 20px;
+
+    border-radius: 20px;
+
+    user-select: none;
+
+    cursor: pointer;
+
+    transition: transform 0.2s ease;
+
+  }
+
+  #autoSellStatus:hover {
+
+    transform: scale(1.05);
+
+  }
+
+  .status-indicator {
+
+    display: inline-block;
+
+    width: 16px;
+
+    height: 16px;
+
+    border-radius: 50%;
+
+    margin-right: 10px;
+
+  }
+
+  .status-on {
+
+    background-color: #4CAF50;
+
+    box-shadow: 0 0 10px #4CAF50;
+
+  }
+
+  .status-off {
+
+    background-color: #F44336;
+
+    box-shadow: 0 0 10px #F44336;
+
+  }
+
+  /* Shop modal styles */
+
+  .modal {
+
+    display: none;
+
+    position: fixed;
+
+    z-index: 100;
+
+    left: 0;
+
+    top: 0;
+
+    width: 100%;
+
+    height: 100%;
+
+    overflow: hidden;
+
+    background-color: rgba(0,0,0,0.7);
+
+    align-items: center;
+
+    justify-content: center;
+
+  }
+
+  .modal-content {
+
+    background: linear-gradient(135deg, #2d2b3a, #5d5a7a);
+
+    margin: auto;
+
+    padding: 25px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 0 25px rgba(106, 90, 205, 0.7);
+
+    width: 80%;
+
+    max-width: 550px;
+
+    position: relative;
+
+  }
+
+  .close-button {
+
+    color: #eee;
+
+    position: absolute;
+
+    right: 20px;
+
+    top: 15px;
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+  }
+
+  .shop-title {
+
+    font-size: 2rem;
+
+    text-align: center;
+
+    margin-bottom: 20px;
+
+    color: #fff;
+
+    text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+
+  }
+
+  .shop-item {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    padding: 15px 20px;
+
+    border-radius: 15px;
+
+    margin-bottom: 15px;
+
+  }
+
+  .shop-item-name {
+
+    font-size: 1.3rem;
+
+    width: 25%;
+
+  }
+
+  .shop-item-description {
+
+    font-size: 0.9rem;
+
+    color: #ccc;
+
+    width: 25%;
+
+  }
+
+  .shop-item-price {
+
+    font-size: 1.1rem;
+
+    color: #ffdd57;
+
+    text-shadow: 0 0 8px rgba(255, 221, 87, 0.6);
+
+    width: 25%;
+
+    text-align: right;
+
+  }
+
+  .buy-button {
+
+    background: #6a5acd;
+
+    border: none;
+
+    padding: 8px 20px;
+
+    font-size: 1.1rem;
+
+    color: #fff;
+
+    border-radius: 20px;
+
+    cursor: pointer;
+
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+  }
+
+  .buy-button:hover {
+
+    background: #836fff;
+
+    transform: scale(1.05);
+
+  }
+
+ 
+
+  /* Settings modal styles */
+
+  #settingsModal .modal-content {
+
+    max-height: 80vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+  }
+
+  .settings-title {
+
+    font-size: 2rem;
+
+    text-align: center;
+
+    margin-bottom: 10px;
+
+    color: #fff;
+
+    text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+
+  }
+
+  .global-toggle {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.3);
+
+    padding: 15px 20px;
+
+    border-radius: 15px;
+
+    margin-bottom: 15px;
+
+  }
+
+  .toggle-switch {
+
+    position: relative;
+
+    display: inline-block;
+
+    width: 60px;
+
+    height: 34px;
+
+  }
+
+  .toggle-switch input {
+
+    opacity: 0;
+
+    width: 0;
+
+    height: 0;
+
+  }
+
+  .toggle-slider {
+
+    position: absolute;
+
+    cursor: pointer;
+
+    top: 0;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+
+    background-color: #F44336;
+
+    transition: .4s;
+
+    border-radius: 34px;
+
+  }
+
+  .toggle-slider:before {
+
+    position: absolute;
+
+    content: "";
+
+    height: 26px;
+
+    width: 26px;
+
+    left: 4px;
+
+    bottom: 4px;
+
+    background-color: white;
+
+    transition: .4s;
+
+    border-radius: 50%;
+
+  }
+
+  input:checked + .toggle-slider {
+
+    background-color: #4CAF50;
+
+  }
+
+  input:checked + .toggle-slider:before {
+
+    transform: translateX(26px);
+
+  }
+
+  .aura-list-container {
+
+    overflow-y: auto;
+
+    max-height: 50vh;
+
+    margin-top: 10px;
+
+    padding-right: 5px;
+
+  }
+
+  .aura-item {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.2);
+
+    padding: 12px 20px;
+
+    border-radius: 10px;
+
+    margin-bottom: 8px;
+
+  }
+
+  .aura-name {
+
+    font-size: 1.2rem;
+
+    font-weight: 600;
+
+  }
+
+ 
+
+  /* Notification styles */
+
+  /* Prevent page scrolling */
+
+  html, body {
+
+    overflow: hidden;
+
+    height: 100%;
+
+  }
+
+ 
+
+  /* Notification styles */
+
+  .notification-container {
+
+    position: fixed;
+
+    top: 10px;
+
+    right: 20px;
+
+    width: 280px;
+
+    z-index: 200;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    pointer-events: none;
+
+  }
+
+ 
+
+  .game-notification {
+
+    background: rgba(0, 0, 0, 0.8);
+
+    color: #ffdd57;
+
+    padding: 12px 18px;
+
+    border-radius: 10px;
+
+    font-size: 1.1rem;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+
+    transform: translateX(320px);
+
+    transition: transform 0.3s ease-out, opacity 0.3s ease;
+
+    opacity: 0;
+
+    max-width: 100%;
+
+  }
+
+ 
+
+  .game-notification.show {
+
+    transform: translateX(0);
+
+    opacity: 1;
+
+  }
+
+ 
+
+  .game-notification.blink {
+
+    animation: blinkEffect 0.6s;
+
+  }
+
+ 
+
+  @keyframes blinkEffect {
+
+    0% { background-color: rgba(0, 0, 0, 0.8); }
+
+    50% { background-color: rgba(255, 255, 255, 0.3); }
+
+    100% { background-color: rgba(0, 0, 0, 0.8); }
+
+  }
+
+  .commonText {
+
+    color: #ddd;
+
+    text-shadow: 0 0 6px #a8a8a8;
+
+  }
+
+  .uncommonText {
+
+    color: #e6f4ea;
+
+    text-shadow: 0 0 8px #3dbe4f;
+
+  }
+
+  .rareText {
+
+    color: #d8e9ff;
+
+    text-shadow: 0 0 10px #339cff;
+
+  }
+
+  .epicText {
+
+    color: #e8dafc;
+
+    text-shadow: 0 0 15px #a87ffc;
+
+  }
+
+  .legendaryText {
+
+    color: #fff7e6;
+
+    text-shadow: 0 0 15px #ffac41;
+
+  }
+
+  .mythicText {
+
+    color: #ffe7f2;
+
+    text-shadow: 0 0 18px #ff50b8;
+
+  }
+
+  .ultraRareText {
+
+    color: #dff6fb;
+
+    text-shadow: 0 0 20px #55d0f0;
+
+  }
+
+  /* Container for roll button to properly position settings button */
+
+  .roll-button-container {
+
+    position: relative;
+
+    width: 90%;
+
+    max-width: 400px;
+
+    margin-bottom: 15px;
+
+    margin-top: 20px;
+
+  }
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top-section">
+
+  <h1>Generic RNG</h1>
+
+  <!-- Shop button moved under the title -->
+
+  <button id="shopBtn" class="standard-button" aria-label="Open Shop">Shop</button>
+
+ 
+
+  <div class="credits-display">
+
+    <span>Credits</span>
+
+    <span class="credits-value">0</span>
+
+  </div>
+
+</div>
+
+ 
+
+<div class="notification-container" id="notification-container"></div>
+
+ 
+
+<div class="bottom-section">
+
+  <!-- Highest RNG display first -->
+
+  <div id="highestBox" aria-live="polite" aria-atomic="true">
+
+    Highest RNG: <span id="highestRarity" class="commonText">None</span>
+
+  </div>
+
+ 
+
+  <!-- Result display second -->
+
+  <div id="result" role="status" aria-live="polite">
+
+    <button id="sellButton">Sell!</button>
+
+    <span id="mainText">Click "Roll Aura" to begin!</span>
+
+    <span id="subtext"></span>
+
+  </div>
+
+ 
+
+  <!-- Auto Sell Status -->
+
+  <div id="autoSellStatus" style="display: none;">
+
+    <span class="status-indicator status-off"></span>
+
+    <span>Auto Sell: Off</span>
+
+  </div>
+
+ 
+
+  <!-- Roll button container with settings button inside -->
+
+  <div class="roll-button-container">
+
+    <button id="rollBtn" class="standard-button" aria-label="Roll Aura">Roll Aura</button>
+
+    <!-- Settings Button (Cog Wheel) inside roll button container -->
+
+    <button id="settingsBtn" aria-label="Settings">
+
+      <svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 512 512">
+
+        <path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"/>
+
+      </svg>
+
+    </button>
+
+  </div>
+
+  <div id="keyHint">Press SPACE to roll</div>
+
+ 
+
+  <div id="stats-display">
+
+    Luck <span class="stat-value">1x</span> | RollSpeed <span class="stat-value">1.5s</span> | CoinMultiplier <span class="stat-value">1x</span>
+
+  </div>
+
+</div>
+
+ 
+
+<!-- Shop Modal -->
+
+<div id="shopModal" class="modal">
+
+  <div class="modal-content">
+
+    <span class="close-button">&times;</span>
+
+    <h2 class="shop-title">Aura Shop</h2>
+
+    <div class="shop-item">
+
+      <span class="shop-item-name">Luck Booster</span>
+
+      <span class="shop-item-description">+0.2x luck</span>
+
+      <span class="shop-item-price">100 Credits</span>
+
+      <button class="buy-button" data-item="luck">Buy</button>
+
+    </div>
+
+    <div class="shop-item">
+
+      <span class="shop-item-name">Roll Speed</span>
+
+      <span class="shop-item-description">-0.1s roll time</span>
+
+      <span class="shop-item-price">150 Credits</span>
+
+      <button class="buy-button" data-item="rollSpeed">Buy</button>
+
+    </div>
+
+    <div class="shop-item">
+
+      <span class="shop-item-name">Coin Multiplier</span>
+
+      <span class="shop-item-description">+0.25x coins</span>
+
+      <span class="shop-item-price">250 Credits</span>
+
+      <button class="buy-button" data-item="coinMultiplier">Buy</button>
+
+    </div>
+
+    <div class="shop-item">
+
+      <span class="shop-item-name">Auto Sell</span>
+
+      <span class="shop-item-description">Auto sell feature</span>
+
+      <span class="shop-item-price">1500 Credits</span>
+
+      <button class="buy-button" data-item="autoSell">Buy</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+ 
+
+<!-- Settings Modal -->
+
+<div id="settingsModal" class="modal">
+
+  <div class="modal-content">
+
+    <span class="close-button">&times;</span>
+
+    <h2 class="settings-title">Settings</h2>
+
+   
+
+    <div class="global-toggle">
+
+      <span class="toggle-label">Auto Sell</span>
+
+      <label class="toggle-switch">
+
+        <input type="checkbox" id="globalAutoSellToggle">
+
+        <span class="toggle-slider"></span>
+
+      </label>
+
+    </div>
+
+   
+
+    <h3>Auto Sell Configuration</h3>
+
+    <div class="aura-list-container">
+
+      <!-- Aura list will be populated by JavaScript -->
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  (function() {
+
+    var rollBtn = document.getElementById('rollBtn');
+
+    var shopBtn = document.getElementById('shopBtn');
+
+    var settingsBtn = document.getElementById('settingsBtn');
+
+    var resultDiv = document.getElementById('result');
+
+    var mainText = document.getElementById('mainText');
+
+    var subtext = document.getElementById('subtext');
+
+    var highestRaritySpan = document.getElementById('highestRarity');
+
+    var highestBox = document.getElementById('highestBox');
+
+    var shopModal = document.getElementById('shopModal');
+
+    var settingsModal = document.getElementById('settingsModal');
+
+    var closeButtons = document.querySelectorAll('.close-button');
+
+    var sellButton = document.getElementById('sellButton');
+
+    var creditsValue = document.querySelector('.credits-value');
+
+    var statsDisplay = document.getElementById('stats-display');
+
+    var autoSellStatus = document.getElementById('autoSellStatus');
+
+    var globalAutoSellToggle = document.getElementById('globalAutoSellToggle');
+
+
+    var auras = [
+
+      {name: 'Common', probability: 0.5, textClass: 'commonText', rank: 1},
+
+      {name: 'Uncommon', probability: 0.75, textClass: 'uncommonText', rank: 2},
+
+      {name: 'Rare', probability: 0.875, textClass: 'rareText', rank: 3},
+
+      {name: 'Epic', probability: 0.9375, textClass: 'epicText', rank: 4},
+
+      {name: 'Legendary', probability: 0.96875, textClass: 'legendaryText', rank: 5},
+
+      {name: 'Mythic', probability: 0.984375, textClass: 'mythicText', rank: 6},
+
+      {name: 'Ultra Rare', probability: 0.9921875, textClass: 'ultraRareText', rank: 7}
+
+    ];
+
+
+    var highestRarity = {rank: 0, name: 'None', textClass: 'commonText'};
+
+    var currentAura = null;
+
+    var credits = 0;
+
+    var isRolling = false; // Flag to prevent multiple rolls
+
+   
+
+    // Player stats and upgrades
+
+    var stats = {
+
+      luck: 1,
+
+      rollSpeed: 1.5, // This is seconds (lower is faster)
+
+      coinMultiplier: 1
+
+    };
+
+   
+
+    // Auto Sell Configuration
+
+    var autoSellConfig = {
+
+      unlocked: false,
+
+      enabled: false,
+
+      settings: {
+
+        'Common': true,
+
+        'Uncommon': true,
+
+        'Rare': false,
+
+        'Epic': false,
+
+        'Legendary': false,
+
+        'Mythic': false,
+
+        'Ultra Rare': false
+
+      }
+
+    };
+
+
+    function updateCreditsDisplay() {
+
+      creditsValue.textContent = credits;
+
+    }
+
+   
+
+    function updateStatsDisplay() {
+
+      statsDisplay.innerHTML = 'Luck <span class="stat-value">' + stats.luck + 'x</span> | RollSpeed <span class="stat-value">' + stats.rollSpeed + 's</span> | CoinMultiplier <span class="stat-value">' + stats.coinMultiplier + 'x</span>';
+
+    }
+
+   
+
+    function updateAutoSellStatus() {
+
+      if (autoSellConfig.unlocked) {
+
+        autoSellStatus.style.display = 'flex';
+
+       
+
+        var statusIndicator = autoSellStatus.querySelector('.status-indicator');
+
+        var statusText = autoSellStatus.querySelector('span:last-child');
+
+       
+
+        if (autoSellConfig.enabled) {
+
+          statusIndicator.className = 'status-indicator status-on';
+
+          statusText.textContent = 'Auto Sell: On';
+
+        } else {
+
+          statusIndicator.className = 'status-indicator status-off';
+
+          statusText.textContent = 'Auto Sell: Off';
+
+        }
+
+       
+
+        // Make the settings button visible when auto sell is unlocked
+
+        settingsBtn.style.display = 'flex';
+
+      } else {
+
+        autoSellStatus.style.display = 'none';
+
+        // Hide the settings button when auto sell is not unlocked
+
+        settingsBtn.style.display = 'none';
+
+      }
+
+    }
+
+   
+
+    function toggleAutoSell() {
+
+      if (autoSellConfig.unlocked) {
+
+        autoSellConfig.enabled = !autoSellConfig.enabled;
+
+        updateAutoSellStatus();
+
+        globalAutoSellToggle.checked = autoSellConfig.enabled;
+
+       
+
+        showNotification('Auto Sell ' + (autoSellConfig.enabled ? 'Enabled' : 'Disabled'));
+
+      }
+
+    }
+
+
+    function rollAura() {
+
+      // Prevent multiple rolls at once
+
+      if (isRolling) return;
+
+     
+
+      isRolling = true;
+
+      mainText.textContent = 'Rolling...';
+
+      subtext.textContent = '';
+
+      rollBtn.disabled = true;
+
+      sellButton.style.display = 'none';
+
+     
+
+      // Use rollSpeed directly as seconds for the animation time
+
+      var rollTime = stats.rollSpeed * 1000; // Convert to milliseconds
+
+
+      setTimeout(function(){
+
+        var rnd = Math.random();
+
+       
+
+        // Apply luck to improve chances (decrease probability thresholds)
+
+        var luckFactor = Math.min(0.15, (stats.luck - 1) * 0.05); // Each luck level improves chances by up to 5%
+
+       
+
+        var selectedAura = auras[auras.length-1]; // default to last aura
+
+        for(var i=0; i<auras.length; i++) {
+
+          if(rnd < (auras[i].probability - luckFactor)) {
+
+            selectedAura = auras[i];
+
+            break;
+
+          }
+
+        }
+
+        // Update mainText with co// Update mainText with color and text
+
+        currentAura = selectedAura;
+
+        mainText.textContent = selectedAura.name + ' Aura';
+
+        mainText.className = selectedAura.textClass;
+
+       
+
+        // Add some subtext about the aura's rarity
+
+        var rarity = '';
+
+        switch(selectedAura.rank) {
+
+          case 1: rarity = 'Common (50%)'; break;
+
+          case 2: rarity = 'Uncommon (25%)'; break;
+
+          case 3: rarity = 'Rare (12.5%)'; break;
+
+          case 4: rarity = 'Epic (6.25%)'; break;
+
+          case 5: rarity = 'Legendary (3.125%)'; break;
+
+          case 6: rarity = 'Mythic (1.5625%)'; break;
+
+          case 7: rarity = 'Ultra Rare (0.78125%)'; break;
+
+        }
+
+        subtext.textContent = rarity;
+
+       
+
+        // Update highest rarity
+
+        if(selectedAura.rank > highestRarity.rank) {
+
+          highestRarity = selectedAura;
+
+          highestRaritySpan.textContent = selectedAura.name;
+
+          highestRaritySpan.className = selectedAura.textClass;
+
+          showNotification('New Highest Aura: ' + selectedAura.name + '!', true);
+
+        }
+
+       
+
+        // Check if we should auto-sell this aura
+
+        if (autoSellConfig.unlocked && autoSellConfig.enabled &&
+
+            autoSellConfig.settings[selectedAura.name]) {
+
+          sellAura(true);
+
+        } else {
+
+          sellButton.style.display = 'block';
+
+        }
+
+       
+
+        isRolling = false;
+
+        rollBtn.disabled = false;
+
+      }, rollTime);
+
+    }
+
+   
+
+    function sellAura(isAuto = false) {
+
+      if (!currentAura) return;
+
+     
+
+      // Calculate credits based on rarity and coin multiplier
+
+      var baseValue = Math.pow(2, currentAura.rank);
+
+      var earnedCredits = Math.round(baseValue * stats.coinMultiplier);
+
+     
+
+      credits += earnedCredits;
+
+      updateCreditsDisplay();
+
+     
+
+      // Show notification
+
+      if (isAuto) {
+
+        showNotification('Auto Sold: ' + currentAura.name + ' for ' + earnedCredits + ' credits');
+
+      } else {
+
+        showNotification('Sold: ' + currentAura.name + ' for ' + earnedCredits + ' credits');
+
+      }
+
+     
+
+      // Reset result area
+
+      mainText.textContent = 'Sold!';
+
+      mainText.className = '';
+
+      subtext.textContent = 'Roll again for a new aura';
+
+      sellButton.style.display = 'none';
+
+      currentAura = null;
+
+    }
+
+   
+
+    // Shop functionality
+
+    function openShop() {
+
+      shopModal.style.display = 'flex';
+
+    }
+
+   
+
+    function closeModals() {
+
+      shopModal.style.display = 'none';
+
+      settingsModal.style.display = 'none';
+
+    }
+
+   
+
+    function buyUpgrade(item) {
+
+      var cost = 0;
+
+      var canBuy = false;
+
+     
+
+      switch(item) {
+
+        case 'luck':
+
+          cost = 100;
+
+          canBuy = credits >= cost;
+
+          if(canBuy) {
+
+            stats.luck += 0.2;
+
+            stats.luck = Math.round(stats.luck * 10) / 10; // Round to 1 decimal place
+
+          }
+
+          break;
+
+        case 'rollSpeed':
+
+          cost = 150;
+
+          canBuy = credits >= cost && stats.rollSpeed > 0.5; // Minimum roll speed
+
+          if(canBuy) {
+
+            stats.rollSpeed -= 0.1;
+
+            stats.rollSpeed = Math.round(stats.rollSpeed * 10) / 10; // Round to 1 decimal place
+
+          }
+
+          break;
+
+        case 'coinMultiplier':
+
+          cost = 250;
+
+          canBuy = credits >= cost;
+
+          if(canBuy) {
+
+            stats.coinMultiplier += 0.25;
+
+            stats.coinMultiplier = Math.round(stats.coinMultiplier * 100) / 100; // Round to 2 decimal places
+
+          }
+
+          break;
+
+        case 'autoSell':
+
+          cost = 1500;
+
+          canBuy = credits >= cost && !autoSellConfig.unlocked;
+
+          if(canBuy) {
+
+            autoSellConfig.unlocked = true;
+
+            updateAutoSellStatus();
+
+            populateAutoSellSettings();
+
+          }
+
+          break;
+
+      }
+
+     
+
+      if(canBuy) {
+
+        credits -= cost;
+
+        updateCreditsDisplay();
+
+        updateStatsDisplay();
+
+        showNotification('Purchased ' + item + ' upgrade!');
+
+      } else {
+
+        if (credits < cost) {
+
+          showNotification('Not enough credits!');
+
+        } else {
+
+          showNotification('Cannot purchase more!');
+
+        }
+
+      }
+
+    }
+
+   
+
+    // Settings Modal functionality
+
+    function openSettings() {
+
+      if (autoSellConfig.unlocked) {
+
+        globalAutoSellToggle.checked = autoSellConfig.enabled;
+
+        settingsModal.style.display = 'flex';
+
+      }
+
+    }
+
+   
+
+    function populateAutoSellSettings() {
+
+      var auraListContainer = document.querySelector('.aura-list-container');
+
+      auraListContainer.innerHTML = '';
+
+     
+
+      auras.forEach(function(aura) {
+
+        var auraItem = document.createElement('div');
+
+        auraItem.className = 'aura-item';
+
+       
+
+        var auraName = document.createElement('span');
+
+        auraName.className = 'aura-name ' + aura.textClass;
+
+        auraName.textContent = aura.name;
+
+       
+
+        var toggleLabel = document.createElement('label');
+
+        toggleLabel.className = 'toggle-switch';
+
+       
+
+        var toggleInput = document.createElement('input');
+
+        toggleInput.type = 'checkbox';
+
+        toggleInput.checked = autoSellConfig.settings[aura.name];
+
+        toggleInput.dataset.aura = aura.name;
+
+        toggleInput.addEventListener('change', function() {
+
+          autoSellConfig.settings[this.dataset.aura] = this.checked;
+
+          showNotification('Updated auto sell for ' + this.dataset.aura);
+
+        });
+
+       
+
+        var toggleSlider = document.createElement('span');
+
+        toggleSlider.className = 'toggle-slider';
+
+       
+
+        toggleLabel.appendChild(toggleInput);
+
+        toggleLabel.appendChild(toggleSlider);
+
+       
+
+        auraItem.appendChild(auraName);
+
+        auraItem.appendChild(toggleLabel);
+
+       
+
+        auraListContainer.appendChild(auraItem);
+
+      });
+
+    }
+
+   
+
+    // Notification system
+
+    function showNotification(message, blink = false) {
+
+      var notificationContainer = document.getElementById('notification-container');
+
+     
+
+      var notification = document.createElement('div');
+
+      notification.className = 'game-notification';
+
+      notification.textContent = message;
+
+     
+
+      notificationContainer.appendChild(notification);
+
+     
+
+      // Trigger reflow to ensure animation works
+
+      notification.offsetHeight;
+
+     
+
+      notification.classList.add('show');
+
+      if (blink) notification.classList.add('blink');
+
+     
+
+      setTimeout(function() {
+
+        notification.classList.remove('show');
+
+        setTimeout(function() {
+
+          notificationContainer.removeChild(notification);
+
+        }, 300);
+
+      }, 3000);
+
+    }
+
+   
+
+    // Event Listeners
+
+    rollBtn.addEventListener('click', rollAura);
+
+    shopBtn.addEventListener('click', openShop);
+
+    settingsBtn.addEventListener('click', openSettings);
+
+    sellButton.addEventListener('click', function() { sellAura(false); });
+
+    autoSellStatus.addEventListener('click', toggleAutoSell);
+
+   
+
+    closeButtons.forEach(function(button) {
+
+      button.addEventListener('click', closeModals);
+
+    });
+
+   
+
+    window.addEventListener('click', function(event) {
+
+      if (event.target === shopModal) {
+
+        closeModals();
+
+      }
+
+      if (event.target === settingsModal) {
+
+        closeModals();
+
+      }
+
+    });
+
+   
+
+    document.querySelectorAll('.buy-button').forEach(function(button) {
+
+      button.addEventListener('click', function() {
+
+        buyUpgrade(this.dataset.item);
+
+      });
+
+    });
+
+   
+
+    globalAutoSellToggle.addEventListener('change', function() {
+
+      autoSellConfig.enabled = this.checked;
+
+      updateAutoSellStatus();
+
+    });
+
+   
+
+    // Support for space key to roll
+
+    document.addEventListener('keydown', function(event) {
+
+      if (event.code === 'Space' && !isRolling && !shopModal.style.display === 'flex' && !settingsModal.style.display === 'flex') {
+
+        rollAura();
+
+        event.preventDefault(); // Prevent page scrolling
+
+      }
+
+    });
+
+   
+
+    // Initialize
+
+    updateCreditsDisplay();
+
+    updateStatsDisplay();
+
+    updateAutoSellStatus();
+
+    sellButton.style.display = 'none';
+
+   
+
+    // Give initial credits for testing
+
+    credits = 50;
+
+    updateCreditsDisplay();
+
+    showNotification('Welcome to Generic RNG!');
+
+  })();
+
+</script>
+
+</body>
+
+</html>
